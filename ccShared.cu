@@ -10,10 +10,7 @@ using namespace chrono;
 #include "JP/CUDA/JPCuda.h"
 using namespace nvcuda;
 
-#define	D	4096
-#define	M	D
-#define	K	D
-#define	N	D
+#include "CONSTANTS.h"
 
 template < typename Fa, typename Fb, typename Fc > __global__ void
 MatM(
@@ -53,14 +50,13 @@ auto timer = system_clock::now();
 	MatM<<< dim3( M / 32, N / 32 ), dim3( 32, 32 ) >>>( a.$, b.$, c.$ );
 	cudaDeviceSynchronize();
 
-printf( "%f ms\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() / 1000000. );
+printf( "%ld ns\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() );
 	c.DtoH();
-printf( "%f ms\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() / 1000000. );
+printf( "%ld ns\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() );
 
 	a.DtoH();
 	b.DtoH();
 
-/*
 	for ( auto m = 0; m < M; m++ ) {
 		for ( auto n = 0; n < N; n++ ) {
 			auto $ = 0.;
@@ -69,7 +65,6 @@ printf( "%f ms\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() 
 			if ( abs( $ - _ ) > 0.05 ) cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
 		}
 	}
-*/
 }
 
 int

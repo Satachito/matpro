@@ -10,10 +10,7 @@ using namespace chrono;
 #include "JP/CUDA/JPCuda.h"
 using namespace nvcuda;
 
-#define	D	1024
-#define	M	D
-#define	K	D
-#define	N	D
+#include "CONSTANTS.h"
 
 template < typename Fa, typename Fb, typename Fc > __global__ void
 MatPro(
@@ -54,13 +51,13 @@ Main() {
 	auto timer = system_clock::now();
 	MatPro<<< dim3( N / 16, M / 16 ), 32 >>>( a.$, b.$, c.$ );	//	32: FIXED NUMBER warp size
 	cudaDeviceSynchronize();
-	printf( "%f ms\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() / 1000000. );
+	printf( "%ld ns\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() );
 	c.DtoH();
-	printf( "%f ms\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() / 1000000. );
+	printf( "%ld ns\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() );
 
 	a.DtoH();
 	b.DtoH();
-#if 0
+
 	for ( auto m = 0; m < M; m++ ) {
 		for ( auto n = 0; n < N; n++ ) {
 			auto $ = 0.;
@@ -69,7 +66,7 @@ Main() {
 			if ( abs( $ - _ ) > 0.01 ) cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
 		}
 	}
-#endif
+
 }
 
 int
