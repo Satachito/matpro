@@ -1,2 +1,2 @@
-c++ -std=c++17 -mavx512f -fopenmp -Ofast cpu.cpp
+c++ -std=c++17 -mavx512f -pthread -Ofast cpu.cpp
 ./a.out

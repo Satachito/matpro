@@ -18,9 +18,7 @@ DumpM512( __m512 _ ) {
 	cerr << _[ 12 ] << ',' << _[ 13 ] << ',' << _[ 14 ] << ',' << _[ 15 ] << endl;
 }
 
-#define	M	512
-#define	K	1024
-#define	N	2048
+#include	"CONSTANTS.h"
 
 void
 MatPro( float* a, float* b, float* c ) {
