@@ -12,17 +12,17 @@ using namespace nvcuda;
 
 #include "CONSTANTS.h"
 
-template < typename Fa, typename Fb, typename Fc > __global__ void
+template < typename F > __global__ void
 MatPro(
-	const	Fa* _a
-,	const	Fb* _b
-,			Fc* _c
+	const	half*	_a
+,	const	half*	_b
+,			F*		_c
 ) {
 //printf( "TX: %d %d %d %d %d %d %d %d\n", gridDim.x, gridDim.y, blockIdx.x, blockIdx.y, blockDim.x, blockDim.y, threadIdx.x, threadIdx.y );
 
-	wmma::fragment< wmma::matrix_a, 16, 16, 16, Fa, wmma::row_major > a;
-	wmma::fragment< wmma::matrix_b, 16, 16, 16, Fb, wmma::row_major > b;
-	wmma::fragment< wmma::accumulator, 16, 16, 16, Fc > c;
+	wmma::fragment< wmma::matrix_a, 16, 16, 16, half, wmma::row_major > a;
+	wmma::fragment< wmma::matrix_b, 16, 16, 16, half, wmma::row_major > b;
+	wmma::fragment< wmma::accumulator, 16, 16, 16, F > c;
 
 	wmma::fill_fragment( c, 0 );
 
@@ -39,13 +39,13 @@ MatPro(
 void
 Main() {
 
-	CUDAMemory< float > a( M * K );
+	CUDAMemory< half > a( M * K );
 	DummyData( a );
 
-	CUDAMemory< float > b( K * N );
+	CUDAMemory< half > b( K * N );
 	DummyData( b );
 
-	CUDAMemory< float > c( M * N );
+	CUDAMemory< half > c( M * N );
 
 	auto timer = system_clock::now();
 	MatPro<<< dim3( N / 16, M / 16 ), 32 >>>( a.$, b.$, c.$ );	//	32: FIXED NUMBER warp size
@@ -64,7 +64,7 @@ Main() {
 				$ += float( a.Host()[ m * K + k ] ) * float( b.Host()[ k * N + n ] );
 			}
 			auto _ = float( c.Host()[ m * N + n ] );
-			if ( abs( $ - _ ) > 0.01 ) {
+			if ( abs( $ - _ ) > 2 ) {
 				cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
 				throw "eh?";
 			}
