@@ -58,12 +58,17 @@ Main() {
 	a.DtoH();
 	b.DtoH();
 
+c.$[ M * N - 1 ] = 828;
 	for ( auto m = 0; m < M; m++ ) {
 		for ( auto n = 0; n < N; n++ ) {
 			auto $ = 0.;
-			for ( auto k = 0; k < K; k++ ) $ += float( a( m * K + k ) ) * float( b( k * N + n ) );
+			for ( auto k = 0; k < K; k++ ) {
+				cerr << float( a( m * K + k ) ) << ':' << float( b( k * N + n ) ) << ':' << endl;
+				$ += float( a( m * K + k ) ) * float( b( k * N + n ) );
+			}
 			auto _ = float( c( m * N + n ) );
-			if ( abs( $ - _ ) > 0.01 ) cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
+		//	if ( abs( $ - _ ) > 0.01 ) cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
+			cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
 		}
 	}
 

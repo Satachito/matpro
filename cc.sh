@@ -1,9 +1,20 @@
-nvcc -arch=sm_86 -DCUDA_LEGACY -O4 cc.cu
-echo "LEGACY"
-./a.out
+nvcc	\
+	-DCUDA_MANAGED	\
+	--std=c++17	\
+	-o _	\
+	_.cu
 
-nvcc -arch=sm_86 -DCUDA_MANAGED -O4 cc.cu
-echo "MANAGED"
-./a.out
+echo 'Managed'
+./_
 
-rm ./a.out
+nvcc	\
+	-DCUDA_LEGACY	\
+	--std=c++17	\
+	-o _	\
+	_.cu
+
+echo 'Legacy'
+./_
+
+#	-gencode arch=compute_80,code=sm_80	\
+#	-gencode arch=compute_86,code=compute_86	\
