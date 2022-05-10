@@ -18,8 +18,6 @@ MatPro(
 ,	const	half*	_b
 ,			F*		_c
 ) {
-//printf( "TX: %d %d %d %d %d %d %d %d\n", gridDim.x, gridDim.y, blockIdx.x, blockIdx.y, blockDim.x, blockDim.y, threadIdx.x, threadIdx.y );
-
 	wmma::fragment< wmma::matrix_a, 16, 16, 16, half, wmma::row_major > a;
 	wmma::fragment< wmma::matrix_b, 16, 16, 16, half, wmma::row_major > b;
 	wmma::fragment< wmma::accumulator, 16, 16, 16, F > c;
@@ -27,7 +25,6 @@ MatPro(
 	wmma::fill_fragment( c, 0 );
 
 	for ( auto k = 0; k < K; k += 16 ) {
-//if ( threadIdx.x == 0 ) printf( "%d %d %d %lu %lu\n", blockIdx.x, blockIdx.y, k, ( blockIdx.y * K * 16 + k ), ( k * N + blockIdx.x * 16 ) );
 		wmma::load_matrix_sync( a, _a + ( blockIdx.y * K * 16 + k ), K );
 		wmma::load_matrix_sync( b, _b + ( k * N + blockIdx.x * 16 ), N );
 		wmma::mma_sync( c, a, b, c );
@@ -45,10 +42,10 @@ Main() {
 	CUDAMemory< half > b( K * N );
 	DummyData( b );
 
-	CUDAMemory< half > c( M * N );
+	CUDAMemory< float > c( M * N );
 
 	auto timer = system_clock::now();
-	MatPro<<< dim3( N / 16, M / 16 ), 32 >>>( a.$, b.$, c.$ );	//	32: FIXED NUMBER warp size
+	MatPro<<< dim3( N / 16, M / 16 ), 32 >>>( a.$, b.$, c.$ );	//	32: WARP SIZE ( FIXED NUMBER ) 
 	cudaDeviceSynchronize();
 	c.DtoH();
 	printf( "%ld ns\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() );
@@ -64,14 +61,12 @@ Main() {
 				$ += float( a.Host()[ m * K + k ] ) * float( b.Host()[ k * N + n ] );
 			}
 			auto _ = float( c.Host()[ m * N + n ] );
-			if ( abs( $ - _ ) > 2 ) {
+			if ( abs( $ - _ ) > 1 ) {
 				cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
 				throw "eh?";
 			}
-		//	cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
 		}
 	}
-
 }
 
 int
