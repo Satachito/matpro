@@ -1,8 +1,22 @@
-nvcc -arch=sm_86 -DCUDA_MANAGED -O4 tc.cu
+nvcc	\
+	-DCUDA_MANAGED	\
+	-arch=sm_86	\
+	--std=c++17	\
+	-gencode arch=compute_80,code=sm_80	\
+	-gencode arch=compute_86,code=compute_86	\
+	tc.cu
+
 echo "MANAGED"
 ./a.out
 
-nvcc -arch=sm_86 -DCUDA_LEGACY -O4 tc.cu
+nvcc	\
+	-DCUDA_LEGACY	\
+	-arch=sm_86	\
+	--std=c++17	\
+	-gencode arch=compute_80,code=sm_80	\
+	-gencode arch=compute_86,code=compute_86	\
+	tc.cu
+
 echo "LEGACY"
 ./a.out
 

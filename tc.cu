@@ -18,8 +18,7 @@ MatPro(
 ,	const	Fb* _b
 ,			Fc* _c
 ) {
-//printf( "TX: %d %d %d %d %d %d %d\n", gridDim.x, gridDim.y, blockIdx.x, blockIdx.y, blockDim.x, blockDim.y, threadIdx.x );
-// A,B,Cのfragment
+//printf( "TX: %d %d %d %d %d %d %d %d\n", gridDim.x, gridDim.y, blockIdx.x, blockIdx.y, blockDim.x, blockDim.y, threadIdx.x, threadIdx.y );
 
 	wmma::fragment< wmma::matrix_a, 16, 16, 16, Fa, wmma::row_major > a;
 	wmma::fragment< wmma::matrix_b, 16, 16, 16, Fb, wmma::row_major > b;
@@ -40,10 +39,10 @@ MatPro(
 void
 Main() {
 
-	CUDAMemory< half > a( M * K );
+	CUDAMemory< float > a( M * K );
 	DummyData( a );
 
-	CUDAMemory< half > b( K * N );
+	CUDAMemory< float > b( K * N );
 	DummyData( b );
 
 	CUDAMemory< float > c( M * N );
@@ -51,24 +50,25 @@ Main() {
 	auto timer = system_clock::now();
 	MatPro<<< dim3( N / 16, M / 16 ), 32 >>>( a.$, b.$, c.$ );	//	32: FIXED NUMBER warp size
 	cudaDeviceSynchronize();
-	printf( "%ld ns\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() );
 	c.DtoH();
 	printf( "%ld ns\n", duration_cast<std::chrono::nanoseconds>( system_clock::now() - timer ).count() );
 
 	a.DtoH();
 	b.DtoH();
 
-c.$[ M * N - 1 ] = 828;
+	c.Host()[ M * N - 1 ] = -1;
 	for ( auto m = 0; m < M; m++ ) {
 		for ( auto n = 0; n < N; n++ ) {
 			auto $ = 0.;
 			for ( auto k = 0; k < K; k++ ) {
-				cerr << float( a( m * K + k ) ) << ':' << float( b( k * N + n ) ) << ':' << endl;
-				$ += float( a( m * K + k ) ) * float( b( k * N + n ) );
+				$ += float( a.Host()[ m * K + k ] ) * float( b.Host()[ k * N + n ] );
 			}
-			auto _ = float( c( m * N + n ) );
-		//	if ( abs( $ - _ ) > 0.01 ) cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
-			cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
+			auto _ = float( c.Host()[ m * N + n ] );
+			if ( abs( $ - _ ) > 0.01 ) {
+				cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
+				throw "eh?";
+			}
+		//	cerr << m << ',' << n << ' ' << $ << ':' << _ << ':' << abs( $ - _ ) << endl;
 		}
 	}
 

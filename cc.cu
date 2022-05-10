@@ -47,7 +47,7 @@ Main() {
 	a.DtoH();
 	b.DtoH();
 
-c.Host()[ ( M - 1 ) * N + N - 1 ] = -1;
+c.Host()[ M * N - 1 ] = -1;
 	for ( auto m = 0; m < M; m++ ) {
 		for ( auto n = 0; n < N; n++ ) {
 			auto $ = 0.;

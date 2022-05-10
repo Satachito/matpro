@@ -1,8 +1,9 @@
 nvcc	\
 	-DCUDA_MANAGED	\
 	--std=c++17	\
+	-O4	\
 	-o _	\
-	_.cu
+	cc.cu
 
 echo 'Managed'
 ./_
@@ -10,8 +11,9 @@ echo 'Managed'
 nvcc	\
 	-DCUDA_LEGACY	\
 	--std=c++17	\
+	-O4	\
 	-o _	\
-	_.cu
+	cc.cu
 
 echo 'Legacy'
 ./_
